@@ -1,43 +1,66 @@
-import { useState } from 'react'
-import logo from './logo.svg'
-import './App.css'
+import React, { FC, useEffect, useRef, useState } from 'react';
+import axios from 'axios';
 
-function App() {
-  const [count, setCount] = useState(0)
+import './app.css';
+
+const App: FC = () => {
+  const [state, setState] = useState({
+    searchValue: "",
+    audioUrl: null,
+  });
+
+  const audioRef = useRef<HTMLAudioElement>(null);
+
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.load();
+      audioRef.current.play();
+    }
+  }, [state.audioUrl]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setState(prevState => ({
+      ...prevState,
+      searchValue: e.target.value
+    }))
+  }
+
+  const handleSearch = () => {
+    axios.get(`http://localhost:3001/get/${state.searchValue}`).then((res) => {
+      if (res.status === 200) {
+
+        setState(prevState => ({
+          ...prevState,
+          audioUrl: res.data.result,
+          searchValue: ""
+        }))
+      } else {
+        alert(res.data.error)
+      }
+    });
+  }
 
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>Hello Vite + React!</p>
-        <p>
-          <button type="button" onClick={() => setCount((count) => count + 1)}>
-            count is: {count}
-          </button>
-        </p>
-        <p>
-          Edit <code>App.tsx</code> and save to test HMR updates.
-        </p>
-        <p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-          {' | '}
-          <a
-            className="App-link"
-            href="https://vitejs.dev/guide/features.html"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Vite Docs
-          </a>
-        </p>
-      </header>
+    <div className="app">
+      <div className="form" >
+        <input
+          type="text"
+          className="input"
+          name="id"
+          autoComplete="off"
+          value={state.searchValue}
+          onChange={handleChange}
+        />
+        <button className="button" onClick={handleSearch}>Play</button>
+      </div>
+
+      <div className="audio-wrapper">
+        {state.audioUrl && (
+          <audio controls ref={audioRef}>
+            <source src={state.audioUrl} />
+          </audio>
+        )}
+      </div>
     </div>
   )
 }

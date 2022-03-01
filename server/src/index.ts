@@ -1,6 +1,7 @@
 require("dotenv").config();
-import express, { Application, Request, Response } from "express";
 import { exec } from "child_process";
+import express, { Application, Request, Response } from "express";
+import cors from "cors";
 
 const YOUTUBE_DL_PATH = process.env.YOUTUBE_DL_PATH;
 const PORT = 3001;
@@ -8,6 +9,7 @@ const PORT = 3001;
 const app: Application = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cors())
 
 const command = (...commandValue: any) => {
   return new Promise((resolve, reject) => {
